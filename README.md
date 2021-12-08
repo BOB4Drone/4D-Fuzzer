@@ -7,8 +7,8 @@ This is an effort to test the MAVLink works written in python using fuzz testing
 
 
 ## Target Program
-[PX4-Autopilot Software](https://github.com/PX4/PX4-Autopilot)
-[QGroundControl Ground Control Station](https://github.com/mavlink/qgroundcontrol)
+[PX4-Autopilot Software](https://github.com/PX4/PX4-Autopilot)   
+[QGroundControl](https://github.com/mavlink/qgroundcontrol)   
 [MAVROS](https://github.com/mavlink/mavros)
 
 

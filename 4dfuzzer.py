@@ -32,6 +32,7 @@ def optionHandler():
     for i in range(len(sys.argv)):
         if sys.argv[i] == '-h' or sys.argv[i] == '--help':
             showHelp()
+            mode = ''
             break
         
         elif sys.argv[i] == '-m':
@@ -66,6 +67,10 @@ def PX4Fuzz():
     global serial_flag
     if serial_flag == 0:
         udpSocketOpen()
+        select = input('Do You Want Run mission fuzzing mode? [y/N]')
+        if select == '' or select == 'N' or select =='n':
+            print('Do You Want msgID FIX mode? [y/N]')
+
     else:
         serialOpen()
 

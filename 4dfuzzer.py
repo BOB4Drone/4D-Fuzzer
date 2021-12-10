@@ -1,4 +1,5 @@
 import socket
+import traceback
 import serial
 import sys
 import random
@@ -31,12 +32,10 @@ def printStatus(count,msgid,speed):
     stdscr.addstr(1, 0, "  Run Time     : %dh %dm %ds  "%(now.tm_hour, now.tm_min, now.tm_sec))
     stdscr.addstr(2, 0, "  Iterations   : %d [%.1fk]  "%(count, count/1000))
     stdscr.addstr(3, 0, "  Fuzzed msgID : %s  "%(msgid))
-    stdscr.addstr(4, 0, "  Speed        : %5.2f exec/sec  "%(speed))
-    stdscr.addstr(5, 0, "  Crashes      : not yet")
-    stdscr.addstr(6, 0, "--------------------------- [ 4DFUZZER V 0.1 ] ------------------------------")
+    stdscr.addstr(4, 0, "  Speed        : %.2f exec/sec  "%(speed))
+    stdscr.addstr(5, 0, "--------------------------------- [ LOG ] -----------------------------------")
 
     stdscr.refresh()
-
 
 def random_byte_gen(size):
     return ''. join ([random.choice ('0123456789abcdef') for x in range (2*size)])
@@ -83,6 +82,123 @@ def optionHandler():
 
 def calculate_length(payload):
     return format(len(payload)//2 ,'02x')
+
+def missionCountGenerator(count, seq):
+    magic_val, msgid = format(int(msg_extra_crc['44']), '02x'), 44
+    
+
+    try:
+        header = "fd04000000ffbe2c0000"   
+        count = format(count, '04x')
+        count = count[-2:] + count[0:2]
+        target_system, target_component = "01", "01"
+        payload = count + target_system + target_component
+        length = calculate_length(payload)
+        crc = Crcc16Mcrf4xx.calc(bytes.fromhex(str(header[2:]+ payload + magic_val)))
+        crc = format(crc,'04x')
+        crc = [crc[-2:], crc[0:2]]
+
+        a = []
+        a.append(header)
+        a.append(payload)
+        a.extend(crc)
+
+        string = ''.join(a)
+                   
+        string = bytes.fromhex(string)
+        return string
+                    
+    except Exception as ex:
+        print(traceback.format_exc())
+        pass
+
+def missionItemGenerator(count, seq, original_count):
+    magic_val, min_len, max_len, msgid = format(int(msg_extra_crc['73']), '02x'), int(msgid_length_min['73']), int(msgid_length['73']), 73
+    try:
+        stx = "fd"
+        incFLAG = "00"
+        cmpFLAG = "00"
+        msgID = str(format(msgid,'06x'))
+        msgID = [msgID[-2:], msgID[-4:-2], msgID[0:2]]
+        msgID = "".join(msgID)
+        sysID = format(0xff, '02x')	# going to change it in the future
+        compID = format(0xbe, '02x')	# going to change it in the future
+        newSeq = format(seq, '02x')
+            
+        param = random_byte_gen(28)
+        target_system, target_component, frame, current, autocontinue = "01", "01", "03", "01", "01"
+        if count == 0:
+            command = format(22, '04x')
+        elif count == original_count - 1:
+            command = format(20, '04x')
+            frame = "02"
+        else:
+            command = format(16, '04x')
+        command = command[-2:] + command[0:2]
+        count = format(count, '04x')
+        count = count[-2:] + count[0:2]
+        
+        mission_type = ""
+        payload = param + count + command + target_system + target_component + frame + current + autocontinue + mission_type
+
+        length = calculate_length(payload)
+        crc = Crcc16Mcrf4xx.calc(bytes.fromhex(str(length + incFLAG + cmpFLAG + newSeq + sysID + compID + msgID  + payload + magic_val)))
+        crc = format(crc,'04x')
+        crc = [crc[-2:], crc[0:2]]
+        tmp = []
+        tmp.extend([stx, length, incFLAG, cmpFLAG, newSeq])
+        tmp.extend([sysID, compID, msgID, payload])
+        tmp.extend(crc)
+                    
+        final_packet = ''.join(tmp)   
+                     
+        final_packet = bytes.fromhex(final_packet)
+        return final_packet
+                    
+    except Exception as ex:
+        print(traceback.format_exc())
+        pass
+
+def missionSender():
+    global stdscr
+    stdscr = curses.initscr()
+    curses.noecho()
+    curses.cbreak()
+    iteration = 0
+    try:
+        while True:
+            seq = 0 
+
+            for count in range(10, 0xffff):
+                start = time.time()
+                sock.sendto(missionCountGenerator(count, seq),(ip,port))
+                iteration += 1
+                time.sleep(0.5)
+                speed = (time.time() - start)
+                printStatus(iteration,'44',speed)
+                seq = seq + 1
+                if seq < 255:
+                    seq += 1
+                else:
+                    seq = 0
+                for j in range(count):
+                    start = time.time()
+                    sock.sendto(missionItemGenerator(j, seq, count),(ip,port))
+                    iteration += 1
+                    time.sleep(0.1)
+                    speed = (time.time() - start)
+                    printStatus(iteration,'73',speed)
+                    seq = seq + 1
+                    if seq < 255:
+                        seq += 1
+                    else:
+                        seq = 0
+                time.sleep(0.3)
+
+    except Exception as e:
+        print('\nTry : {}'.format(iteration))
+        curses.nocbreak()
+        curses.endwin()
 
 def packetGenerator(msgid,len,seq):
     payload = random_byte_gen(len)
@@ -133,12 +249,11 @@ def packetSender(msgid=0):
                     start = time.time()
                     for seq in range(255): 
                         sock.sendto(packetGenerator(msgid,len,seq),(ip,port))
-                        time.sleep(1)
                         count += 1
                     speed = 255/(time.time() - start)
                     printStatus(count,msgid,speed)
     
-    except:
+    except Exception as e:
         print('\nTry : {}'.format(count))
         curses.nocbreak()
         curses.endwin()
@@ -157,7 +272,7 @@ def packetSenderToSerial(msgid=0):
                         for seq in range(255): 
                             ser.write(packetGenerator(msgid,len,seq))
                             count += 1
-                        end = time.time() - start
+                        speed = 255/(time.time() - start)
                         
                         printStatus(count,msgid,speed)
         
@@ -167,9 +282,8 @@ def packetSenderToSerial(msgid=0):
                     start = time.time()
                     for seq in range(255): 
                         ser.write(packetGenerator(msgid,len,seq))
-                        time.sleep(1)
                         count += 1
-                    end = time.time() - start
+                    speed = 255/(time.time() - start)
                     printStatus(count,msgid,speed)
     
     except:
@@ -205,6 +319,10 @@ def OnFuzz():
                     print('Invalid msgID')
                     return
                 packetSender(msgid)
+
+        elif select == 'Y' or select == 'y':
+            missionSender()
+            
     
     else:
         serialOpen()

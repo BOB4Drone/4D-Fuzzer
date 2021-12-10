@@ -29,10 +29,10 @@ def printStatus(count,msgid,speed):
 
     
     stdscr.addstr(0, 0, "--------------------------- [ 4DFUZZER V 0.1 ] ------------------------------")
-    stdscr.addstr(1, 0, "  Run Time     : %dh %dm %ds  "%(now.tm_hour, now.tm_min, now.tm_sec))
-    stdscr.addstr(2, 0, "  Iterations   : %d [%.1fk]  "%(count, count/1000))
-    stdscr.addstr(3, 0, "  Fuzzed msgID : %s  "%(msgid))
-    stdscr.addstr(4, 0, "  Speed        : %.2f exec/sec  "%(speed))
+    stdscr.addstr(1, 0, "  Run Time     : %dh %dm %ds                                                 "%(now.tm_hour, now.tm_min, now.tm_sec))
+    stdscr.addstr(2, 0, "  Iterations   : %d [%.1fk]                                                  "%(count, count/1000))
+    stdscr.addstr(3, 0, "  Fuzzed msgID : %s                                                          "%(msgid))
+    stdscr.addstr(4, 0, "  Speed        : %.2f exec/sec                                               "%(speed))
     stdscr.addstr(5, 0, "--------------------------------- [ LOG ] -----------------------------------")
 
     stdscr.refresh()
@@ -108,8 +108,7 @@ def missionCountGenerator(count, seq):
         string = bytes.fromhex(string)
         return string
                     
-    except Exception as ex:
-        print(traceback.format_exc())
+    except :
         pass
 
 def missionItemGenerator(count, seq, original_count):
@@ -155,8 +154,7 @@ def missionItemGenerator(count, seq, original_count):
         final_packet = bytes.fromhex(final_packet)
         return final_packet
                     
-    except Exception as ex:
-        print(traceback.format_exc())
+    except :
         pass
 
 def missionSender():
@@ -195,7 +193,7 @@ def missionSender():
                         seq = 0
                 time.sleep(0.3)
 
-    except Exception as e:
+    except :
         print('\nTry : {}'.format(iteration))
         curses.nocbreak()
         curses.endwin()
@@ -253,7 +251,7 @@ def packetSender(msgid=0):
                     speed = 255/(time.time() - start)
                     printStatus(count,msgid,speed)
     
-    except Exception as e:
+    except:
         print('\nTry : {}'.format(count))
         curses.nocbreak()
         curses.endwin()

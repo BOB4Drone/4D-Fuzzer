@@ -300,7 +300,7 @@ def packetSender(msgid=0, iteration=1):
                         
 
 
-                            speed = 255/(time.time() - start)
+                            speed = (time.time() - start)
                             
                             printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
 
@@ -322,7 +322,7 @@ def packetSender(msgid=0, iteration=1):
                         data, addr = sock.recvfrom(4096)
 
 
-                        speed = 255/(time.time() - start)
+                        speed = (time.time() - start)
                         
                         printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
     
@@ -354,7 +354,7 @@ def packetSenderToSerial(msgid=0, iteration=1):
                                 seq += 1
 
 
-                            speed = 255/(time.time() - start)
+                            speed = (time.time() - start)
                             
                             printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
         
@@ -372,7 +372,7 @@ def packetSenderToSerial(msgid=0, iteration=1):
                         else:
                             seq += 1
 
-                        speed = 255/(time.time() - start)
+                        speed = (time.time() - start)
                         printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
                         prev_packet_and_msgid = [packet. msgid]
         

@@ -1,3 +1,4 @@
+import hashlib
 import socket
 import traceback
 import serial
@@ -7,9 +8,18 @@ from crccheck.crc import Crcc16Mcrf4xx
 import time
 import curses
 
-msg_extra_crc = {'140': '181', '375': '251', '246': '184', '301': '243', '141': '47', '30': '39', '31': '246', '61': '167', '83': '22', '138': '109', '7': '119', '286': '210', '148': '178', '147': '154', '257': '131', '262': '12', '271': '22', '263': '133', '259': '92', '260': '146', '276': '18', '275': '126', '112': '174', '336': '245', '334': '72', '5': '217', '6': '104', '247': '81', '77': '143', '80': '14', '75': '158', '76': '152', '395': '0', '146': '103', '411': '106', '67': '21', '130': '29', '254': '46', '350': '232', '250': '49', '132': '85', '225': '208', '131': '223', '290': '251', '291': '10', '230': '163', '410': '160', '245': '130', '162': '189', '110': '84', '264': '49', '144': '127', '373': '117', '285': '137', '283': '74', '284': '99', '280': '70', '282': '123', '288': '20', '287': '1', '281': '48', '33': '104', '63': '119', '101': '102', '124': '87', '128': '226', '49': '39', '123': '250', '232': '151', '24': '24', '233': '35', '127': '25', '25': '23', '105': '93', '234': '150', '235': '179', '93': '47', '91': '63', '113': '124', '114': '237', '92': '54', '107': '108', '90': '183', '115': '4', '242': '104', '12920': '20', '335': '225', '149': '200', '8': '117', '32': '185', '64': '191', '89': '231', '268': '14', '266': '193', '267': '35', '120': '134', '118': '56', '121': '237', '119': '116', '122': '203', '117': '128', '192': '36', '69': '243', '81': '106', '249': '204', '244': '95', '47': '153', '45': '232', '44': '221', '42': '28', '39': '254', '73': '38', '46': '11', '40': '230', '51': '196', '43': '132', '37': '212', '41': '28', '38': '9', '265': '26', '251': '170', '252': '44', '62': '183', '330': '23', '331': '91', '390': '156', '12902': '49', '12900': '114', '12901': '254', '12915': '62', '12905': '49', '12903': '249', '12904': '203', '100': '175', '106': '138', '360': '11', '19': '137', '324': '132', '321': '88', '320': '243', '323': '78', '322': '243', '50': '78', '21': '159', '20': '214', '23': '168', '22': '220', '4': '237', '258': '187', '400': '110', '87': '150', '85': '140', '125': '203', '109': '185', '27': '144', '28': '67', '339': '199', '65': '118', '70': '124', '35': '244', '34': '237', '66': '148', '412': '33', '142': '72', '413': '77', '55': '3', '54': '15', '26': '170', '116': '76', '129': '46', '29': '115', '137': '195', '143': '131', '126': '220', '36': '222', '256': '71', '139': '168', '82': '49', '48': '41', '243': '85', '11': '89', '86': '5', '84': '143', '108': '32', '370': '75', '253': '83', '261': '179', '401': '183', '2': '137', '1': '124', '135': '203', '134': '229', '136': '1', '133': '6', '111': '34', '380': '232', '333': '231', '332': '236', '385': '147', '311': '95', '310': '28', '340': '99', '248': '8', '74': '20', '241': '90', '104': '56', '269': '109', '270': '59', '102': '158', '103': '208', '9000': '113', '299': '19', '9005': '117', '231': '105', '295': '41', '52': '132', '53': '3', '298': '237', '0': '50', '300': '217', '17000': '103'}
-msgid_length_min = {'140': '41', '375': '140', '246': '38', '301': '58', '141': '32', '30': '28', '31': '32', '61': '72', '83': '37', '138': '36', '7': '32', '286': '53', '148': '60', '147': '36', '257': '9', '262': '18', '271': '52', '263': '255', '259': '235', '260': '5', '276': '49', '275': '31', '112': '12', '336': '84', '334': '10', '5': '28', '6': '3', '247': '19', '77': '3', '80': '4', '75': '35', '76': '33', '395': '212', '146': '100', '411': '3', '67': '4', '130': '13', '254': '9', '350': '20', '250': '30', '132': '14', '225': '65', '131': '255', '290': '46', '291': '57', '230': '42', '410': '53', '245': '2', '162': '8', '110': '254', '264': '28', '144': '93', '373': '42', '285': '40', '283': '144', '284': '32', '280': '33', '282': '35', '288': '23', '287': '23', '281': '13', '33': '28', '63': '181', '101': '32', '124': '35', '128': '35', '49': '12', '123': '113', '232': '63', '24': '30', '233': '182', '127': '35', '25': '101', '105': '62', '234': '40', '235': '42', '93': '81', '91': '42', '113': '36', '114': '44', '92': '33', '107': '64', '90': '56', '115': '64', '242': '52', '12920': '5', '335': '24', '149': '30', '8': '36', '32': '28', '64': '225', '89': '28', '268': '4', '266': '255', '267': '255', '120': '97', '118': '14', '121': '2', '119': '12', '122': '2', '117': '6', '192': '44', '69': '11', '81': '22', '249': '36', '244': '6', '47': '3', '45': '2', '44': '4', '42': '2', '39': '37', '73': '37', '46': '2', '40': '4', '51': '4', '43': '2', '37': '6', '41': '4', '38': '6', '265': '16', '251': '18', '252': '18', '62': '26', '330': '158', '331': '230', '390': '238', '12902': '53', '12900': '44', '12901': '59', '12915': '254', '12905': '43', '12903': '46', '12904': '46', '100': '26', '106': '44', '360': '25', '19': '24', '324': '146', '321': '2', '320': '20', '323': '147', '322': '149', '50': '37', '21': '2', '20': '20', '23': '23', '22': '25', '4': '14', '258': '32', '400': '254', '87': '51', '85': '51', '125': '6', '109': '9', '27': '26', '28': '16', '339': '5', '65': '42', '70': '18', '35': '22', '34': '22', '66': '6', '412': '6', '142': '243', '413': '7', '55': '25', '54': '27', '26': '22', '116': '22', '129': '22', '29': '14', '137': '14', '143': '14', '126': '79', '36': '21', '256': '42', '139': '43', '82': '39', '48': '13', '243': '53', '11': '6', '86': '53', '84': '53', '108': '84', '370': '87', '253': '51', '261': '27', '401': '6', '2': '12', '1': '31', '135': '8', '134': '43', '136': '22', '133': '18', '111': '16', '380': '20', '333': '109', '332': '239', '385': '133', '311': '116', '310': '17', '340': '70', '248': '254', '74': '20', '241': '32', '104': '32', '269': '213', '270': '19', '102': '32', '103': '20', '9000': '137', '299': '96', '9005': '34', '231': '40', '295': '20', '52': '7', '53': '5', '298': '37', '0': '9', '300': '22', '17000': '179'}
-msgid_length = {'140': '41', '375': '140', '246': '38', '301': '58', '141': '32', '30': '28', '31': '48', '61': '72', '83': '37', '138': '120', '7': '32', '286': '53', '148': '78', '147': '54', '257': '9', '262': '22', '271': '52', '263': '255', '259': '235', '260': '13', '276': '49', '275': '31', '112': '12', '336': '84', '334': '10', '5': '28', '6': '3', '247': '19', '77': '10', '80': '4', '75': '35', '76': '33', '395': '212', '146': '100', '411': '3', '67': '4', '130': '13', '254': '9', '350': '252', '250': '30', '132': '39', '225': '65', '131': '255', '290': '46', '291': '57', '230': '42', '410': '53', '245': '2', '162': '9', '110': '254', '264': '28', '144': '93', '373': '42', '285': '40', '283': '144', '284': '32', '280': '33', '282': '35', '288': '23', '287': '23', '281': '13', '33': '28', '63': '181', '101': '117', '124': '57', '128': '35', '49': '20', '123': '113', '232': '65', '24': '52', '233': '182', '127': '35', '25': '101', '105': '63', '234': '40', '235': '42', '93': '81', '91': '42', '113': '39', '114': '44', '92': '33', '107': '65', '90': '56', '115': '64', '242': '60', '12920': '5', '335': '24', '149': '60', '8': '36', '32': '28', '64': '225', '89': '28', '268': '4', '266': '255', '267': '255', '120': '97', '118': '14', '121': '2', '119': '12', '122': '2', '117': '6', '192': '54', '69': '18', '81': '22', '249': '36', '244': '6', '47': '4', '45': '3', '44': '5', '42': '2', '39': '38', '73': '38', '46': '2', '40': '5', '51': '5', '43': '3', '37': '7', '41': '4', '38': '7', '265': '20', '251': '18', '252': '18', '62': '26', '330': '167', '331': '232', '390': '238', '12902': '53', '12900': '44', '12901': '59', '12915': '254', '12905': '43', '12903': '46', '12904': '46', '100': '34', '106': '44', '360': '25', '19': '24', '324': '146', '321': '2', '320': '20', '323': '147', '322': '149', '50': '37', '21': '2', '20': '20', '23': '23', '22': '25', '4': '14', '258': '232', '400': '254', '87': '51', '85': '51', '125': '6', '109': '9', '27': '29', '28': '16', '339': '5', '65': '42', '70': '38', '35': '22', '34': '22', '66': '6', '412': '6', '142': '243', '413': '7', '55': '25', '54': '27', '26': '24', '116': '24', '129': '24', '29': '16', '137': '16', '143': '16', '126': '79', '36': '37', '256': '42', '139': '43', '82': '51', '48': '21', '243': '61', '11': '6', '86': '53', '84': '53', '108': '84', '370': '109', '253': '54', '261': '60', '401': '6', '2': '12', '1': '31', '135': '8', '134': '43', '136': '22', '133': '18', '111': '16', '380': '20', '333': '109', '332': '239', '385': '133', '311': '116', '310': '17', '340': '70', '248': '254', '74': '20', '241': '32', '104': '116', '269': '213', '270': '19', '102': '117', '103': '57', '9000': '137', '299': '98', '9005': '34', '231': '40', '295': '20', '52': '7', '53': '5', '298': '37', '0': '9', '300': '22', '17000': '179'}
+qgc_msgid_list = ['147', '77', '265', '109', '141', '136', '330', '263', '62', '116', '267', '65', '126', '242', '234', '235', '253', '129', '24', '245', '26', '27', '22', '33', '31', '30', '246', '131', '266', '130', '1', '0', '180', '74', '410', '411', '133', '413', '110', '360', '4']
+qgc_msgid_crc = {'180': '52', '263': '133', '116': '76', '360': '11', '74': '20', '24': '24', '31': '167', '330': '23', '109': '185', '126': '220', '235': '179', '411': '106', '242': '104', '33': '104', '1': '124', '147': '154', '245': '130', '410': '160', '267': '35', '265': '26', '27': '144', '234': '150', '65': '124', '4': '237', '129': '46', '26': '170', '413': '77', '266': '193', '246': '184', '253': '83', '141': '47', '77': '143', '30': '22', '62': '183', '0': '50', '110': '84', '22': '220', '130': '29', '131': '223', '133': '6', '136': '1'}
+qgc_msgid_length_min = {'180': '45', '263': '255', '116': '22', '360': '25', '74': '20', '24': '30', '31': '72', '330': '158', '109': '9', '126': '79', '235': '42', '411': '3', '242': '52', '33': '28', '1': '31', '147': '36', '245': '2', '410': '53', '267': '255', '265': '16', '27': '26', '234': '40', '65': '18', '4': '14', '129': '22', '26': '22', '413': '7', '266': '255', '246': '38', '253': '51', '141': '32', '77': '3', '30': '37', '62': '26', '0': '9', '110': '254', '22': '25', '130': '13', '131': '255', '133': '18', '136': '22'}
+qgc_msgid_length_max = {'180': '45', '263': '255', '116': '22', '360': '25', '74': '20', '24': '30', '31': '72', '330': '158', '109': '9', '126': '79', '235': '42', '411': '3', '242': '52', '33': '28', '1': '31', '147': '36', '245': '2', '410': '53', '267': '255', '265': '16', '27': '26', '234': '40', '65': '18', '4': '14', '129': '22', '26': '22', '413': '7', '266': '255', '246': '38', '253': '51', '141': '32', '77': '3', '30': '37', '62': '26', '0': '9', '110': '254', '22': '25', '130': '13', '131': '255','133': '18', '136': '22'}
+
+
+
+px4_msgid_list = ['110', '373', '69', '138', '117', '258', '251', '330', '283', '50', '109', '126', '11', '84', '23', '400', '147', '132', '75', '121', '144', '149', '340', '139', '390', '268', '106', '412', '65', '333', '102', '4', '233', '119', '82', '288', '70', '107', '246', '122', '247', '254', '250', '253', '282', '334', '76', '115', '21', '20', '113', '331', '48', '332', '350', '77', '86', '114', '0']
+px4_msgid_crc = {'110': '84', '373': '117', '69': '243', '138': '109', '117': '128', '258': '187', '251': '170', '330': '23', '283': '74', '50': '78', '109': '185', '126': '220', '11': '89', '84': '143', '23': '168', '400': '110', '147': '154', '132': '85', '75': '158', '121': '237', '144': '127', '149': '200', '340': '99', '139': '168', '390': '156', '268': '14', '106': '138', '412': '33', '65': '118', '333': '231', '102': '158', '4': '237', '233': '35', '119': '116', '82': '49', '288': '20', '70': '124', '107': '108', '246': '184', '122': '203', '247': '81', '254': '46', '250': '49', '253': '83', '282': '123', '334': '72', '76': '152', '115': '4', '21': '159', '20': '214', '113': '124', '331': '91', '48': '41', '332': '236', '350': '232', '77': '143', '86': '5', '114': '237', '0': '50'}
+px4_msgid_length_min = {'110': '254', '373': '42', '69': '11', '138': '36', '117': '6', '258': '32', '251': '18', '330': '158', '283': '144', '50': '37', '109': '9', '126': '79', '11': '6', '84': '53', '23': '23', '400': '254', '147': '36', '132': '14', '75': '35', '121': '2', '144': '93', '149': '30', '340': '70', '139': '43', '390': '238', '268': '4', '106': '44', '412': '6', '65': '42', '333': '109', '102': '32', '4': '14', '233': '182', '119': '12', '82': '39', '288': '23', '70': '18', '107': '64', '246': '38', '122': '2', '247': '19', '254': '9', '250': '30', '253': '51', '282': '35', '334': '10', '76': '33', '115': '64', '21': '2', '20': '20', '113': '36', '331': '230', '48': '13', '332': '239', '350': '20', '77': '3', '86': '53', '114': '44', '0': '9'}
+px4_msgid_length_max = {'110': '254', '373': '42', '69': '18', '138': '120', '117': '6', '258': '232', '251': '18', '330': '167', '283': '144', '50': '37', '109': '9', '126': '79', '11': '6', '84': '53', '23': '23', '400': '254', '147': '54', '132': '39', '75': '35', '121': '2', '144': '93', '149': '60', '340': '70', '139': '43', '390': '238', '268': '4', '106': '44', '412': '6', '65': '42', '333': '109', '102': '117', '4': '14', '233': '182', '119': '12', '82': '51', '288': '23', '70': '38', '107': '65', '246': '38', '122': '2', '247': '19', '254': '9', '250': '30', '253': '54', '282': '35', '334': '10', '76': '33', '115': '64', '21': '2', '20': '20', '113': '39', '331': '232', '48': '21', '332': '239', '350': '252', '77': '10', '86': '53', '114': '44', '0': '9'}
+
 
 def programInfo():
     print('''
@@ -22,6 +32,22 @@ def programInfo():
 ''')
     print('Created by team4drone')
     print('Usage: python3.x\n')
+
+def printUDPStatus(count,msgid,speed, iteration, min_length, max_length, now_len):
+    now = time.gmtime(time.time()-runtime)
+
+
+    
+    stdscr.addstr(0, 0, "--------------------------- [ 4DFUZZER V 0.1 ] ------------------------------")
+    stdscr.addstr(1, 0, "  Run Time     : %dh %dm %ds                                                 "%(now.tm_hour, now.tm_min, now.tm_sec))
+    stdscr.addstr(2, 0, "  Iterations   : %d [%.1fk]                                                  "%(count, count/1000))
+    stdscr.addstr(3, 0, "  Fuzzed msgID : %s                                                          "%(msgid))
+    stdscr.addstr(4, 0, "  Fuzzed length : %s  ( min_length: %s ~ max_length: %s )                    "%(now_len, min_length, max_length))
+    stdscr.addstr(5, 0, "  msgID Iterations   : %d                                                    "%(iteration))
+    stdscr.addstr(6, 0, "  Speed        : %.2f exec/sec                                               "%(speed))
+    stdscr.addstr(7, 0, "--------------------------------- [ LOG ] -----------------------------------")
+
+    stdscr.refresh()
 
 def printStatus(count,msgid,speed):
     now = time.gmtime(time.time()-runtime)
@@ -47,14 +73,20 @@ def showHelp():
     print(' -i ip               Set the Target ip [default 127.0.0.1]')
     print(' -p port             Set the Target port [default 18570]')
     print(' -s port             Use Serial port')
+    print(' -I iteartion per each msgID [default iteration=1')
     print('')
 
 def optionHandler():
-    global mode, ip, port, serial_flag
+    global mode, ip, port, serial_flag, iteration, msgid_list, msgid_crc, msgid_length_min, msgid_length_max
     mode = 'PX4'
     ip = '127.0.0.1'
     serial_flag = 0
     port = 18570
+    iteration = 1
+    msgid_list = px4_msgid_list
+    msgid_crc = px4_msgid_crc
+    msgid_length_min = px4_msgid_length_min
+    msgid_length_max = px4_msgid_length_max
     for i in range(len(sys.argv)):
         if sys.argv[i] == '-h' or sys.argv[i] == '--help':
             showHelp()
@@ -66,9 +98,18 @@ def optionHandler():
                 mode = 'QGC'
                 if port == 18570:
                     port = 14550
+                msgid_list = qgc_msgid_list
+                msgid_crc = qgc_msgid_crc
+                msgid_length_min = qgc_msgid_length_min
+                msgid_length_max = qgc_msgid_length_max
             
             elif sys.argv[i+1] == 'MAVROS' or sys.argv[i+1] == 'mavros':
                 mode = 'MAVROS'
+                msgid_list = px4_msgid_list
+                msgid_crc = px4_msgid_crc
+                msgid_length_min = px4_msgid_length_min
+                msgid_length_max = px4_msgid_length_max
+            
 
         elif sys.argv[i] == '-i':
             ip = sys.argv[i+1]
@@ -79,12 +120,14 @@ def optionHandler():
         elif sys.argv[i] == '-s':
             serial_flag = 1
             port = sys.argv[i+1]
+        elif sys.argv[i] == '-I':
+            iteration = int(sys.argv[i+1])
 
 def calculate_length(payload):
     return format(len(payload)//2 ,'02x')
 
 def missionCountGenerator(count, seq):
-    magic_val, msgid = format(int(msg_extra_crc['44']), '02x'), 44
+    magic_val, msgid = format(int(px4_msgid_crc['44']), '02x'), 44
     
 
     try:
@@ -112,7 +155,7 @@ def missionCountGenerator(count, seq):
         pass
 
 def missionItemGenerator(count, seq, original_count):
-    magic_val, min_len, max_len, msgid = format(int(msg_extra_crc['73']), '02x'), int(msgid_length_min['73']), int(msgid_length['73']), 73
+    magic_val, min_len, max_len, msgid = format(int(px4_msgid_crc['73']), '02x'), int(px4_msgid_length_min['73']), int(px4_msgid_length_max['73']), 73
     try:
         stx = "fd"
         incFLAG = "00"
@@ -199,13 +242,14 @@ def missionSender():
         curses.endwin()
 
 def packetGenerator(msgid,len,seq):
+    global msgid_crc
     payload = random_byte_gen(len)
     stx = "fd"
     incFLAG = "00"
     cmpFLAG = "00"
-    sysID = "ff"
-    compID = "00"
-    magic = format(int(msg_extra_crc[msgid]),'02x')
+    compID = str(format(random.randint(0,255),"02x"))
+    sysID = str(format(random.randint(0,255),"02x"))
+    magic = format(int(msgid_crc[msgid]),'02x')
     msgid = format(int(msgid),'06x')
     msgid = msgid[-2:]+msgid[-4:-2]+msgid[0:2]
     length = calculate_length(payload)
@@ -215,81 +259,132 @@ def packetGenerator(msgid,len,seq):
     crc = str(format(crc,'04x'))
     crc = [crc[-2:], crc[0:2]]
     packet += crc[0]+crc[1]
-    return bytes.fromhex(stx+packet)
+    return stx+packet
 
-def packetSender(msgid=0):
+def save_packet(packet, msgid):
+    filename = hashlib.md5(packet.encode('utf-8')).hexdigest()
+    f = open("./crash/" + filename + "_msgID" + msgid, 'w')
+    f.write(packet)
+
+def packetSender(msgid=0, iteration=1):
 
     global sock,ip,port,stdscr
+    global msgid_length_min, msgid_length_max, msgid_list
+
     count = 0
 
     stdscr = curses.initscr()
     curses.noecho()
     curses.cbreak()
 
+    seq = 0
 
     try:
         if msgid == 0:
             while True:
-                for msgid in msgid_length.keys():
-                    for len in range(int(msgid_length_min[msgid]), int(msgid_length[msgid])+1):
-                        start = time.time()
-                        for seq in range(255): 
-                            sock.sendto(packetGenerator(msgid,len,seq),(ip,port))
+                for msgid in msgid_list:
+                    for len in range(int(msgid_length_min[msgid]), int(msgid_length_max[msgid])+1):
+                        for _ in range(iteration):
+                            start = time.time()
+                            # for seq in range(255):
+                            packet = packetGenerator(msgid,len,seq)
+                            sock.sendto(bytes.fromhex(packet),(ip,port))
                             count += 1
-                        speed = 255/(time.time() - start)
+                            if seq == 255:
+                                seq = 0
+                            else:
+                                seq +=1
+                            
+
+                            data, addr = sock.recvfrom(4096)
                         
-                        printStatus(count,msgid,speed)
+
+
+                            speed = 255/(time.time() - start)
+                            
+                            printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
 
         
         else:
             while True:
-                for len in range(int(msgid_length_min[msgid]), int(msgid_length[msgid])+1):
-                    start = time.time()
-                    for seq in range(255): 
-                        sock.sendto(packetGenerator(msgid,len,seq),(ip,port))
+                for len in range(int(msgid_length_min[msgid]), int(msgid_length_max[msgid])+1):
+                    for _ in range(iteration):
+                        start = time.time()
+                        # for seq in range(255):
+                        packet = packetGenerator(msgid,len,seq) 
+                        sock.sendto(bytes.fromhex(packet),(ip,port))
                         count += 1
-                    speed = 255/(time.time() - start)
-                    printStatus(count,msgid,speed)
+                        if seq == 255:
+                            seq = 0
+                        else:
+                            seq +=1
+
+                        data, addr = sock.recvfrom(4096)
+
+
+                        speed = 255/(time.time() - start)
+                        
+                        printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
     
-    except:
+    except socket.timeout:
+        save_packet(packet,msgid)
         print('\nTry : {}'.format(count))
         curses.nocbreak()
         curses.endwin()
 
-def packetSenderToSerial(msgid=0):
+def packetSenderToSerial(msgid=0, iteration=1):
 
     global ser
     count = 0
-
+    seq = 0
     try:
         if msgid == 0:
             while True:
-                for msgid in msgid_length.keys():
-                    for len in range(int(msgid_length_min[msgid]), int(msgid_length[msgid])+1):
-                        start = time.time()
-                        for seq in range(255): 
-                            ser.write(packetGenerator(msgid,len,seq))
+                for msgid in msgid_list:
+                    for len in range(int(msgid_length_min[msgid]), int(msgid_length_max[msgid])+1):
+                        for _ in range(iteration):
+                            start = time.time()
+                            packet = packetGenerator(msgid,len,seq) 
+                            ser.write(bytes.fromhex(packet))
                             count += 1
-                        speed = 255/(time.time() - start)
-                        
-                        printStatus(count,msgid,speed)
+
+                            if seq == 255:
+                                seq = 0
+                            else:
+                                seq += 1
+
+
+                            speed = 255/(time.time() - start)
+                            
+                            printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
         
         else:
             while True:
-                for len in range(int(msgid_length_min[msgid]), int(msgid_length[msgid])+1):
-                    start = time.time()
-                    for seq in range(255): 
-                        ser.write(packetGenerator(msgid,len,seq))
+                for len in range(int(msgid_length_min[msgid]), int(msgid_length_max[msgid])+1):
+                    for _ in range(iteration):
+                        start = time.time()
+                        packet = packetGenerator(msgid, len, seq)
+                        ser.write(bytes.fromhex(packet))
                         count += 1
-                    speed = 255/(time.time() - start)
-                    printStatus(count,msgid,speed)
-    
-    except:
+
+                        if seq == 255:
+                            seq = 0
+                        else:
+                            seq += 1
+
+                        speed = 255/(time.time() - start)
+                        printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
+                        prev_packet_and_msgid = [packet. msgid]
+        
+    except serial.SerialException:
+        save_packet(prev_packet_and_msgid[0], prev_packet_and_msgid[1])
         print('\nTry : {}'.format(count))
 
 def udpSocketOpen():
     global ip,port,sock,mode
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(5)
+
     # sock.bind((ip,port))
     print('Socket Target {}:{}'.format(ip, port))
     print('Fuzzing Target : {}\n'.format(mode))
@@ -300,7 +395,7 @@ def serialOpen():
     ser = serial.Serial(port, baudrate=57600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False, dsrdtr=False)
 
 def OnFuzz():
-    global serial_flag
+    global serial_flag, iteration
     if serial_flag == 0:
         udpSocketOpen()
         select = input('Do You Want Run Mission fuzzing mode? [y/N]')
@@ -308,15 +403,15 @@ def OnFuzz():
         if select == '' or select == 'N' or select =='n':
             select = input('Do You Want msgID FIX mode? [y/N]')
 
+
             if select == '' or select == 'N' or select =='n':
-                packetSender()
-            
+                packetSender(iteration=iteration)
             elif select == 'Y' or select == 'y':
                 msgid = input('Insert msgID : ')
-                if msgid not in msgid_length.keys():
+                if msgid not in px4_msgid_length_max.keys():
                     print('Invalid msgID')
                     return
-                packetSender(msgid)
+                packetSender(msgid, iteration=iteration)
 
         elif select == 'Y' or select == 'y':
             missionSender()
@@ -325,19 +420,24 @@ def OnFuzz():
     else:
         serialOpen()
         select = input('Do You Want Run Mission fuzzing mode? [y/N]')
+        iteration = 1
+        set_iteration = int(input('Setting iteration per each msgID (Default iteration = 1) '))
+
+        if set_iteration != 1:
+            iteration = set_iteration
 
         if select == '' or select == 'N' or select =='n':
             select = input('Do You Want msgID FIX mode? [y/N]')
 
             if select == '' or select == 'N' or select =='n':
-                packetSender()
+                packetSender(iteration=iteration)
             
             elif select == 'Y' or select == 'y':
                 msgid = input('Insert msgID : ')
-                if msgid not in msgid_length.keys():
+                if msgid not in px4_msgid_length_max.keys():
                     print('Invalid msgID')
                     return
-                packetSender(msgid)
+                packetSender(msgid, iteration=iteration)
 
 
 if __name__ == '__main__':

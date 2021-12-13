@@ -1,9 +1,9 @@
-# 4D Fuzzer (mavlink fuzzer)
+# 4D Fuzzer (a MAVLink fuzzer)
 
 
 ## Description
 
-This is an effort to test the MAVLink works written in python using fuzz testing.
+4D Fuzzer is a fuzzer for fuzzing programs that use MAVLink written in Python.
 
 
 ## Target Program
@@ -35,7 +35,7 @@ not patched yet
 
 
 
-## Using 4D Fuzzer
+## Usage
 
 ```
   -i dir        - input directory with test cases

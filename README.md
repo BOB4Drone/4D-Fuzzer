@@ -8,7 +8,7 @@
 
 
 ## Quick Start
-In order to run this fuzzer, you need to get your target software installed.
+In order to run this fuzzer, you need to get your target software installed and running.
 
 The following are installation document links.
 

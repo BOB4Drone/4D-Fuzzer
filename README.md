@@ -8,15 +8,15 @@
 
 
 ## Quick Start
-만약 PX4 시뮬레이터를 대상으로 테스팅을 수행하려면 다음과 같이 실행하세요.
+If you want to test the PX4 simulator, run it as follows.
 ```
 python3 4dfuzzer.py
 ```
-시리얼 통신을 이용해 퍼징을 할 경우 이렇게 실행하세요.
+If you want to test using serial communication, run it as follows.
 ```
 python3 4dfuzzer.py -s [port]
 ```
-각 msgid별  iteration을 설정하고 싶다면 이렇게 실행하세요.
+If you want to set it up for each msgid, run it as follows.
 ```
 python3 4dfuzzer.py -I [iteration]
 ```

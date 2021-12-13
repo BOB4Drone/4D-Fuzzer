@@ -67,13 +67,16 @@ def random_byte_gen(size):
     return ''. join ([random.choice ('0123456789abcdef') for x in range (2*size)])
 
 def showHelp():
-    print('Options:')
-    print(' -h, --help          Show up Options')
+    print('Usage:                [-h, --help] [-m mode] [-i ip] [-p port]')
+    print('                                      [-I iteration] [-s port]')
+    print('')
+    print('Optional arguments:                                           ')
+    print(' -h, --help          Show up Options                          ')
     print(' -m mode             Selcet Target PX4,QGC,MAVROS[default PX4]')
-    print(' -i ip               Set the Target ip [default 127.0.0.1]')
-    print(' -p port             Set the Target port [default 18570]')
-    print(' -s port             Use Serial port')
-    print(' -I iteartion per each msgID [default iteration=1')
+    print(' -i ip               Set the Target ip [default 127.0.0.1]    ')
+    print(' -p port             Set the Target port [default 18570]      ')
+    print(' -s port             Use Serial port                          ')
+    print(' -I iteartion per each msgID [default iteration=1]')
     print('')
 
 def optionHandler():
@@ -87,6 +90,7 @@ def optionHandler():
     msgid_crc = px4_msgid_crc
     msgid_length_min = px4_msgid_length_min
     msgid_length_max = px4_msgid_length_max
+
     for i in range(len(sys.argv)):
         if sys.argv[i] == '-h' or sys.argv[i] == '--help':
             showHelp()
@@ -302,7 +306,7 @@ def packetSender(msgid=0, iteration=1):
 
                             speed = (time.time() - start)
                             
-                            printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
+                            printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
 
         
         else:
@@ -324,7 +328,7 @@ def packetSender(msgid=0, iteration=1):
 
                         speed = (time.time() - start)
                         
-                        printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
+                        printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
     
     except socket.timeout:
         save_packet(packet,msgid)
@@ -360,7 +364,7 @@ def packetSenderToSerial(msgid=0, iteration=1):
 
                             speed = (time.time() - start)
                             
-                            printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
+                            printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
         
         else:
             while True:
@@ -377,7 +381,7 @@ def packetSenderToSerial(msgid=0, iteration=1):
                             seq += 1
 
                         speed = (time.time() - start)   
-                        printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
+                        printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
                         prev_packet_and_msgid = [packet, msgid]
         
     except serial.SerialException:

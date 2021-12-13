@@ -76,7 +76,7 @@ def showHelp():
     print(' -i ip               Set the Target ip [default 127.0.0.1]    ')
     print(' -p port             Set the Target port [default 18570]      ')
     print(' -s port             Use Serial port                          ')
-    print(' -I iteartion per each msgID [default iteration=1]')
+    print(' -I iteartion per each msgID [default 50]                     ')
     print('')
 
 def optionHandler():
@@ -85,7 +85,7 @@ def optionHandler():
     ip = '127.0.0.1'
     serial_flag = 0
     port = 18570
-    iteration = 1
+    iteration = 50
     msgid_list = px4_msgid_list
     msgid_crc = px4_msgid_crc
     msgid_length_min = px4_msgid_length_min

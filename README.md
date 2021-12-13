@@ -1,3 +1,4 @@
+
 # 4D Fuzzer (a MAVLink fuzzer)
 
 
@@ -5,6 +6,20 @@
 
 4D Fuzzer is a fuzzer for fuzzing programs that use MAVLink written in Python3.
 
+
+## Quick Start
+만약 PX4 시뮬레이터를 대상으로 테스팅을 수행하려면 다음과 같이 실행하세요.
+```
+python3 4dfuzzer.py
+```
+시리얼 통신을 이용해 퍼징을 할 경우 이렇게 실행하세요.
+```
+python3 4dfuzzer.py -s [port]
+```
+각 msgid별  iteration을 설정하고 싶다면 이렇게 실행하세요.
+```
+python3 4dfuzzer.py -I [iteration]
+```
 
 ## Target Program
 [PX4-Autopilot Software](https://github.com/PX4/PX4-Autopilot)   
@@ -27,10 +42,6 @@ patched
 - [MAVROS/pull/1667](https://github.com/mavlink/mavros/pull/1667)
 - [MAVROS/pull/1675](https://github.com/mavlink/mavros/pull/1675)
 
-
-not patched yet
-- [qgroundcontrol/issues/10035](https://github.com/mavlink/qgroundcontrol/issues/10035)
-- [qgroundcontrol/issues/10068](https://github.com/mavlink/qgroundcontrol/issues/10068)
 
 
 ## Usage

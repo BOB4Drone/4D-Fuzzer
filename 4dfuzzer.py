@@ -269,6 +269,7 @@ def save_packet(packet, msgid):
     filename = hashlib.md5(packet.encode('utf-8')).hexdigest()
     f = open("./crash/" + filename + "_msgID" + msgid, 'w')
     f.write(packet)
+    f.close()
 
 def packetSender(msgid=0, iteration=1):
 
@@ -353,6 +354,7 @@ def packetSenderToSerial(msgid=0, iteration=1):
                         for _ in range(iteration):
                             start = time.time()
                             packet = packetGenerator(msgid,len,seq) 
+                            prev_packet_and_msgid = [packet, msgid]
                             ser.write(bytes.fromhex(packet))
                             count += 1
 

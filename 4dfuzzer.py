@@ -334,9 +334,13 @@ def packetSender(msgid=0, iteration=1):
 
 def packetSenderToSerial(msgid=0, iteration=1):
 
-    global ser
+    global ser,stdscr
     count = 0
     seq = 0
+    stdscr = curses.initscr()
+    curses.noecho()
+    curses.cbreak()
+
     try:
         if msgid == 0:
             while True:
@@ -372,13 +376,15 @@ def packetSenderToSerial(msgid=0, iteration=1):
                         else:
                             seq += 1
 
-                        speed = (time.time() - start)
+                        speed = (time.time() - start)   
                         printUDPStatus(count,msgid,speed, _, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
-                        prev_packet_and_msgid = [packet. msgid]
+                        prev_packet_and_msgid = [packet, msgid]
         
     except serial.SerialException:
         save_packet(prev_packet_and_msgid[0], prev_packet_and_msgid[1])
         print('\nTry : {}'.format(count))
+        curses.nocbreak()
+        curses.endwin()
 
 def udpSocketOpen():
     global ip,port,sock,mode
@@ -420,24 +426,19 @@ def OnFuzz():
     else:
         serialOpen()
         select = input('Do You Want Run Mission fuzzing mode? [y/N]')
-        iteration = 1
-        set_iteration = int(input('Setting iteration per each msgID (Default iteration = 1) '))
-
-        if set_iteration != 1:
-            iteration = set_iteration
 
         if select == '' or select == 'N' or select =='n':
             select = input('Do You Want msgID FIX mode? [y/N]')
 
             if select == '' or select == 'N' or select =='n':
-                packetSender(iteration=iteration)
+                packetSenderToSerial(iteration=iteration)
             
             elif select == 'Y' or select == 'y':
                 msgid = input('Insert msgID : ')
                 if msgid not in px4_msgid_length_max.keys():
                     print('Invalid msgID')
                     return
-                packetSender(msgid, iteration=iteration)
+                packetSenderToSerial(msgid, iteration=iteration)
 
 
 if __name__ == '__main__':

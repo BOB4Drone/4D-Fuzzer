@@ -340,6 +340,7 @@ def packetSender(msgid=0, iteration=1):
 def packetSenderToSerial(msgid=0, iteration=1):
 
     global ser,stdscr
+    prev_packet_and_msgid = ['0', 'error']
     count = 0
     seq = 0
     stdscr = curses.initscr()
@@ -354,7 +355,7 @@ def packetSenderToSerial(msgid=0, iteration=1):
                         for _ in range(iteration):
                             start = time.time()
                             packet = packetGenerator(msgid,len,seq) 
-                            prev_packet_and_msgid = [packet, msgid]
+                            
                             ser.write(bytes.fromhex(packet))
                             count += 1
 
@@ -363,18 +364,17 @@ def packetSenderToSerial(msgid=0, iteration=1):
                             else:
                                 seq += 1
 
-
+                            
                             speed = (time.time() - start)
                             
                             printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
-        
+                            
         else:
             while True:
                 for len in range(int(msgid_length_min[msgid]), int(msgid_length_max[msgid])+1):
                     for _ in range(iteration):
                         start = time.time()
                         packet = packetGenerator(msgid, len, seq)
-                        prev_packet_and_msgid = [packet, msgid]
                         ser.write(bytes.fromhex(packet))
                         count += 1
 
@@ -385,7 +385,7 @@ def packetSenderToSerial(msgid=0, iteration=1):
 
                         speed = (time.time() - start)   
                         printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
-                        
+                        prev_packet_and_msgid = [packet, msgid]
         
     except serial.SerialException:
         save_packet(prev_packet_and_msgid[0], prev_packet_and_msgid[1])

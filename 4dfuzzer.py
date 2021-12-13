@@ -42,8 +42,8 @@ def printUDPStatus(count,msgid,speed, iteration, min_length, max_length, now_len
     stdscr.addstr(1, 0, "  Run Time      : %dh %dm %ds                                                 "%(now.tm_hour, now.tm_min, now.tm_sec))
     stdscr.addstr(2, 0, "  Iterations    : %d [%.1fk]                                                  "%(count, count/1000))
     stdscr.addstr(3, 0, "  Fuzzed msgID  : %s                                                          "%(msgid))
-    stdscr.addstr(4, 0, "  Fuzzed length : %s  ( min_length: %s ~ max_length: %s )                    "%(now_len, min_length, max_length))
-    stdscr.addstr(5, 0, "  msgID Iterations : %d                                                    "%(iteration))
+    stdscr.addstr(4, 0, "  Fuzzed length : %s  ( min_length: %s ~ max_length: %s )                     "%(now_len, min_length, max_length))
+    stdscr.addstr(5, 0, "  msgID Iterations : %d                                                       "%(iteration))
     stdscr.addstr(6, 0, "  Speed         : %.2f exec/sec                                               "%(speed))
     stdscr.addstr(7, 0, "--------------------------------- [ LOG ] -----------------------------------")
 
@@ -219,7 +219,7 @@ def missionSender():
                 sock.sendto(missionCountGenerator(count, seq),(ip,port))
                 iteration += 1
                 time.sleep(0.5)
-                speed = (time.time() - start)
+                speed = 1/(time.time() - start)
                 printStatus(iteration,'44',speed)
                 seq = seq + 1
                 if seq < 255:
@@ -231,7 +231,7 @@ def missionSender():
                     sock.sendto(missionItemGenerator(j, seq, count),(ip,port))
                     iteration += 1
                     time.sleep(0.1)
-                    speed = (time.time() - start)
+                    speed = 1/(time.time() - start)
                     printStatus(iteration,'73',speed)
                     seq = seq + 1
                     if seq < 255:
@@ -305,7 +305,7 @@ def packetSender(msgid=0, iteration=1):
                         
 
 
-                            speed = (time.time() - start)
+                            speed = 1/(time.time() - start)
                             
                             printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
 
@@ -327,7 +327,7 @@ def packetSender(msgid=0, iteration=1):
                         data, addr = sock.recvfrom(4096)
 
 
-                        speed = (time.time() - start)
+                        speed = 1/(time.time() - start)
                         
                         printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
     
@@ -340,7 +340,7 @@ def packetSender(msgid=0, iteration=1):
 def packetSenderToSerial(msgid=0, iteration=1):
 
     global ser,stdscr
-    prev_packet_and_msgid = ['0', 'error']
+    prev_packet_and_msgid = ['error', 'error']
     count = 0
     seq = 0
     stdscr = curses.initscr()
@@ -365,9 +365,10 @@ def packetSenderToSerial(msgid=0, iteration=1):
                                 seq += 1
 
                             
-                            speed = (time.time() - start)
+                            speed = 1/(time.time() - start)
                             
                             printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
+                            prev_packet_and_msgid = [packet, msgid]
                             
         else:
             while True:
@@ -383,15 +384,15 @@ def packetSenderToSerial(msgid=0, iteration=1):
                         else:
                             seq += 1
 
-                        speed = (time.time() - start)   
+                        speed = 1/(time.time() - start)   
                         printUDPStatus(count,msgid,speed, _+1, px4_msgid_length_min[msgid], px4_msgid_length_max[msgid] ,str(len))
                         prev_packet_and_msgid = [packet, msgid]
         
     except serial.SerialException:
-        save_packet(prev_packet_and_msgid[0], prev_packet_and_msgid[1])
-        print('\nTry : {}'.format(count))
         curses.nocbreak()
         curses.endwin()
+        print(prev_packet_and_msgid)
+        print('\nTry : {}'.format(count))
 
 def udpSocketOpen():
     global ip,port,sock,mode
@@ -421,7 +422,7 @@ def OnFuzz():
                 packetSender(iteration=iteration)
             elif select == 'Y' or select == 'y':
                 msgid = input('Insert msgID : ')
-                if msgid not in px4_msgid_length_max.keys():
+                if msgid not in px4_msgid_list:
                     print('Invalid msgID')
                     return
                 packetSender(msgid, iteration=iteration)
@@ -442,7 +443,7 @@ def OnFuzz():
             
             elif select == 'Y' or select == 'y':
                 msgid = input('Insert msgID : ')
-                if msgid not in px4_msgid_length_max.keys():
+                if msgid not in px4_msgid_list:
                     print('Invalid msgID')
                     return
                 packetSenderToSerial(msgid, iteration=iteration)

@@ -38,7 +38,7 @@ def printUDPStatus(count,msgid,speed, iteration, min_length, max_length, now_len
 
 
     
-    stdscr.addstr(0, 0, "--------------------------- [ 4DFUZZER V 0.1 ] ------------------------------")
+    stdscr.addstr(0, 0, "--------------------------- [ 4DFUZZER V 1.0 ] ------------------------------")
     stdscr.addstr(1, 0, "  Run Time      : %dh %dm %ds                                                 "%(now.tm_hour, now.tm_min, now.tm_sec))
     stdscr.addstr(2, 0, "  Iterations    : %d [%.1fk]                                                  "%(count, count/1000))
     stdscr.addstr(3, 0, "  Fuzzed msgID  : %s                                                          "%(msgid))
@@ -54,7 +54,7 @@ def printStatus(count,msgid,speed):
 
 
     
-    stdscr.addstr(0, 0, "--------------------------- [ 4DFUZZER V 0.1 ] ------------------------------")
+    stdscr.addstr(0, 0, "--------------------------- [ 4DFUZZER V 1.0 ] ------------------------------")
     stdscr.addstr(1, 0, "  Run Time     : %dh %dm %ds                                                 "%(now.tm_hour, now.tm_min, now.tm_sec))
     stdscr.addstr(2, 0, "  Iterations   : %d [%.1fk]                                                  "%(count, count/1000))
     stdscr.addstr(3, 0, "  Fuzzed msgID : %s                                                          "%(msgid))

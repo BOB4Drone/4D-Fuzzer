@@ -8,6 +8,14 @@
 
 
 ## Quick Start
+In order to run this fuzzer, you need to get your target software installed.
+
+The following are installation document links.
+
+- PX4-Autopilot : https://docs.px4.io/master/en/dev_setup/building_px4.html
+- QGroundControl : https://dev.qgroundcontrol.com/master/en/getting_started/
+- MAVROS : https://docs.px4.io/master/en/ros/mavros_installation.html
+
 If you want to test the PX4 simulator, run it as follows.
 ```
 python3 4dfuzzer.py

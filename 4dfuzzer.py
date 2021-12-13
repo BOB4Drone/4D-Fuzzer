@@ -338,7 +338,7 @@ def packetSender(msgid=0, iteration=1):
 
 def packetSenderToSerial(msgid=0, iteration=1):
 
-    global ser,stdscr
+    global ser,stdscr,prev_packet_and_msgid
     count = 0
     seq = 0
     stdscr = curses.initscr()

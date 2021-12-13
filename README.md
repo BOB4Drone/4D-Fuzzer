@@ -3,7 +3,7 @@
 
 ## Description
 
-4D Fuzzer is a fuzzer for fuzzing programs that use MAVLink written in Python.
+4D Fuzzer is a fuzzer for fuzzing programs that use MAVLink written in Python3.
 
 
 ## Target Program

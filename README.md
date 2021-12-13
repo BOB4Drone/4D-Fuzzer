@@ -24,20 +24,27 @@ patched
 - [qgroundcontrol/pull/10022](https://github.com/mavlink/qgroundcontrol/pull/10022)
 - [qgroundcontrol/pull/10038](https://github.com/mavlink/qgroundcontrol/pull/10038)
 - [qgroundcontrol/pull/10062](https://github.com/mavlink/qgroundcontrol/pull/10062)
+- [MAVROS/pull/1667](https://github.com/mavlink/mavros/pull/1667)
+- [MAVROS/pull/1675](https://github.com/mavlink/mavros/pull/1675)
+
 
 not patched yet
 - [qgroundcontrol/issues/10035](https://github.com/mavlink/qgroundcontrol/issues/10035)
-- [mavros/issues/1668](https://github.com/mavlink/mavros/issues/1668)
 - [qgroundcontrol/issues/10068](https://github.com/mavlink/qgroundcontrol/issues/10068)
-
-## Dependency
-
-
 
 
 ## Usage
 
 ```
-  -i dir        - input directory with test cases
-  -o dir        - output directory for fuzzer findings
+Usage:                [-h, --help] [-m mode] [-i ip] [-p port]
+                                      [-I iteration] [-s port]
+
+Optional arguments:                                           
+ -h, --help          Show up Options                          
+ -m mode             Selcet Target PX4,QGC,MAVROS[default PX4]
+ -i ip               Set the Target ip [default 127.0.0.1]    
+ -p port             Set the Target port [default 18570]      
+ -s port             Use Serial port                          
+ -I iteartion per each msgID [default iteration=1]
+
 ```

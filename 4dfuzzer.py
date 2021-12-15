@@ -76,7 +76,7 @@ def showHelp():
     print(' -i ip               Set the Target ip [default 127.0.0.1]    ')
     print(' -p port             Set the Target port [default 18570]      ')
     print(' -s port             Use Serial port                          ')
-    print(' -I iteartion per each msgID [default 50]                     ')
+    print(' -I iterration       Iteartion per each msgID [default 50]    ')
     print('')
 
 def optionHandler():
